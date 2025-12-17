@@ -34,6 +34,12 @@ def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'
         github_col_c = 'cdm_column'  # Column C (index 2)
         github_col_d = 'pdm_column'  # Column D (index 3)
         
+        # Validate that required columns exist
+        if cdl_col_i not in cdl_df.columns or cdl_col_k not in cdl_df.columns:
+            raise ValueError(f"CDL sheet must contain columns '{cdl_col_i}' and '{cdl_col_k}'")
+        if github_col_c not in github_df.columns or github_col_d not in github_df.columns:
+            raise ValueError(f"GITHUB sheet must contain columns '{github_col_c}' and '{github_col_d}'")
+        
         matched_records = []
         
         # Iterate through CDL rows
