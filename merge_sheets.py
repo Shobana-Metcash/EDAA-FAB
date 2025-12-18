@@ -135,9 +135,9 @@ def merge_sheets(input_file='Loc_Compare.xlsx', output_file='Loc_Compare_Merged.
         # Save to Excel file
         merged_df.to_excel(output_file, index=False, sheet_name='Merged')
         print(f"\nMerged sheet saved to {output_file}")
-        
+
         return merged_df
-            
+
     except Exception as e:
         print(f"Error: {e}")
         import traceback
