@@ -15,7 +15,6 @@ Output:
 
 import pandas as pd
 import sys
-from datetime import datetime
 
 def merge_cust_compare(input_file='cust_compare.xlsx', output_file='cust_compare_merged.xlsx'):
     """
@@ -62,6 +61,9 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file='cust_compare
         
         # Process each CDL row
         print("\nProcessing CDL rows...")
+        # Note: Using nested loop for matching. This is O(n*m) but acceptable for datasets
+        # of this size (190 CDL x 219 GITHUB records). We break after finding the first match
+        # to minimize iterations. For larger datasets, consider using pandas merge or dict lookup.
         for cdl_idx, cdl_row in cdl_df.iterrows():
             cdl_value_i = cdl_row[cdl_col_i]
             cdl_value_k = cdl_row[cdl_col_k]
