@@ -1,7 +1,7 @@
-# EDAA-FAB Excel Comparison Tool
+# EDAA-FAB Excel Comparison and Merge Tools
 
 ## Overview
-This repository contains a Python script that compares data between two sheets (CDL and GITHUB) in an Excel file and generates a report of matching records.
+This repository contains Python scripts for comparing and merging data between two sheets (CDL and GITHUB) in Excel files.
 
 ## Requirements
 - Python 3.x
@@ -14,15 +14,48 @@ Install the required dependencies:
 pip install pandas openpyxl
 ```
 
-## Usage
+## Scripts
 
-### Basic Usage
+### 1. merge_loc_compare.py - Merge Records Tool
+
+Merges records between CDL and GITHUB tabs from `Loc_Compare.xlsx`.
+
+#### Usage
+```bash
+# Basic usage (default input: Loc_Compare.xlsx, output: merged_output.xlsx)
+python3 merge_loc_compare.py
+
+# Custom input/output files
+python3 merge_loc_compare.py input_file.xlsx output_file.xlsx
+```
+
+#### Matching Logic
+- **Match Rule 1**: CDL Column I (Table Field Name) matches GITHUB Column D (cdm_column)
+- **Match Rule 2**: CDL Column K (EDL Tables) matches GITHUB Column E (pdm_column)
+
+#### Output
+A single merged sheet containing:
+1. All CDL rows (with matching GITHUB data appended when a match is found)
+2. Unmatched GITHUB rows appended at the end
+
+The output includes a `Match_Type` column indicating:
+- `CDL_I_matches_GITHUB_D`: Column I matches Column D
+- `CDL_K_matches_GITHUB_E`: Column K matches Column E
+- `Both_Matches`: Both matching conditions met
+- `No_Match`: CDL row with no matching GITHUB record
+- `Unmatched_GITHUB`: GITHUB row with no matching CDL record
+
+### 2. compare_sheets.py - Comparison Tool
+
+Compares CDL and GITHUB sheets and creates separate files for matched and unmatched records.
+
+#### Basic Usage
 Run the script with default settings (reads `compare.xlsx`, outputs `matched_records.xlsx` and `unmatched_records.xlsx`):
 ```bash
 python3 compare_sheets.py
 ```
 
-### Custom Input/Output Files
+#### Custom Input/Output Files
 Specify custom input and output file paths:
 ```bash
 python3 compare_sheets.py input_file.xlsx matched_output.xlsx unmatched_output.xlsx
@@ -94,7 +127,10 @@ Comparison completed successfully!
 ```
 
 ## Files
-- `compare.xlsx` - Input Excel file with CDL and GITHUB sheets
-- `compare_sheets.py` - Main comparison script
-- `matched_records.xlsx` - Output file with matching records (generated after running the script)
-- `unmatched_records.xlsx` - Output file with unmatched records from both sheets (generated after running the script)
+- `Loc_Compare.xlsx` - Input Excel file for merge operation (CDL and GITHUB sheets)
+- `merge_loc_compare.py` - Script to merge CDL and GITHUB tabs into a single output
+- `merged_output.xlsx` - Output file with merged records (generated after running merge_loc_compare.py)
+- `compare.xlsx` - Input Excel file for comparison operation (CDL and GITHUB sheets)
+- `compare_sheets.py` - Script to compare and separate matched/unmatched records
+- `matched_records.xlsx` - Output file with matching records (generated after running compare_sheets.py)
+- `unmatched_records.xlsx` - Output file with unmatched records from both sheets (generated after running compare_sheets.py)
