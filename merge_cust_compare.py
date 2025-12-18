@@ -15,8 +15,21 @@ Output:
 
 import pandas as pd
 import sys
-from datetime import datetime
-import openpyxl
+
+def values_match(val1, val2):
+    """
+    Check if two values match (case-insensitive, whitespace-trimmed).
+    
+    Args:
+        val1: First value to compare
+        val2: Second value to compare
+        
+    Returns:
+        bool: True if values match, False otherwise
+    """
+    if pd.isna(val1) or pd.isna(val2):
+        return False
+    return str(val1).strip().upper() == str(val2).strip().upper()
 
 def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     """
@@ -80,16 +93,9 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
                 github_value_d = github_row[github_col_d]
                 github_value_e = github_row[github_col_e]
                 
-                # Check if CDL Column I matches GITHUB Column D
-                match_found = False
-                if not pd.isna(cdl_value_i) and not pd.isna(github_value_d):
-                    if str(cdl_value_i).strip().upper() == str(github_value_d).strip().upper():
-                        match_found = True
-                
-                # Check if CDL Column K matches GITHUB Column E
-                if not match_found and not pd.isna(cdl_value_k) and not pd.isna(github_value_e):
-                    if str(cdl_value_k).strip().upper() == str(github_value_e).strip().upper():
-                        match_found = True
+                # Check if CDL Column I matches GITHUB Column D or CDL Column K matches GITHUB Column E
+                match_found = (values_match(cdl_value_i, github_value_d) or 
+                              values_match(cdl_value_k, github_value_e))
                 
                 if match_found:
                     matched_github_row = github_row
