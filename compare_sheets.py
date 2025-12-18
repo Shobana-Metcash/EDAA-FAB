@@ -4,20 +4,23 @@ Script to compare CDL and GITHUB tabs from compare.xlsx
 Matches:
 - CDL Column I (Table Field Name) with GITHUB Column C (cdm_column)
 - CDL Column K (Biz Name) with GITHUB Column D (pdm_column)
-Creates a new file with matching records.
+Creates two output files:
+1. matched_records.xlsx - Contains matched records as single rows
+2. unmatched_records.xlsx - Contains unmatched records from both CDL and GITHUB in separate sheets
 """
 
 import pandas as pd
 import sys
 from datetime import datetime
 
-def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'):
+def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx', unmatched_file='unmatched_records.xlsx'):
     """
-    Compare CDL and GITHUB sheets and create output with matched records.
+    Compare CDL and GITHUB sheets and create output with matched and unmatched records.
     
     Args:
         input_file: Path to the input Excel file
-        output_file: Path to the output Excel file
+        output_file: Path to the output Excel file for matched records
+        unmatched_file: Path to the output Excel file for unmatched records
     """
     try:
         # Read the sheets
@@ -41,6 +44,8 @@ def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'
             raise ValueError(f"GITHUB sheet must contain columns '{github_col_c}' and '{github_col_d}'")
         
         matched_records = []
+        matched_cdl_indices = set()
+        matched_github_indices = set()
         
         # Iterate through CDL rows
         for cdl_idx, cdl_row in cdl_df.iterrows():
@@ -93,6 +98,8 @@ def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'
                         'GITHUB_pdm_column': github_value_d,
                     }
                     matched_records.append(matched_record)
+                    matched_cdl_indices.add(cdl_idx)
+                    matched_github_indices.add(github_idx)
         
         # Create DataFrame from matched records
         if matched_records:
@@ -106,11 +113,31 @@ def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'
             # Display summary
             print("\nMatch Type Summary:")
             print(matched_df['Match_Type'].value_counts())
-            
-            return matched_df
         else:
             print("No matching records found.")
-            return None
+            matched_df = None
+        
+        # Find unmatched records
+        unmatched_cdl_indices = set(cdl_df.index) - matched_cdl_indices
+        unmatched_github_indices = set(github_df.index) - matched_github_indices
+        
+        print(f"\nFound {len(unmatched_cdl_indices)} unmatched CDL records")
+        print(f"Found {len(unmatched_github_indices)} unmatched GITHUB records")
+        
+        # Create unmatched records file
+        if unmatched_cdl_indices or unmatched_github_indices:
+            with pd.ExcelWriter(unmatched_file, engine='openpyxl') as writer:
+                if unmatched_cdl_indices:
+                    unmatched_cdl_df = cdl_df.loc[list(unmatched_cdl_indices)]
+                    unmatched_cdl_df.to_excel(writer, sheet_name='Unmatched_CDL', index=False)
+                    print(f"Unmatched CDL records saved to sheet 'Unmatched_CDL' in {unmatched_file}")
+                
+                if unmatched_github_indices:
+                    unmatched_github_df = github_df.loc[list(unmatched_github_indices)]
+                    unmatched_github_df.to_excel(writer, sheet_name='Unmatched_GITHUB', index=False)
+                    print(f"Unmatched GITHUB records saved to sheet 'Unmatched_GITHUB' in {unmatched_file}")
+        
+        return matched_df
             
     except Exception as e:
         print(f"Error: {e}")
@@ -122,18 +149,16 @@ if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'compare.xlsx'
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'matched_records.xlsx'
+    unmatched_file = sys.argv[3] if len(sys.argv) > 3 else 'unmatched_records.xlsx'
     
     print("="*80)
     print("CDL and GITHUB Sheet Comparison Tool")
     print("="*80)
     print(f"Input file: {input_file}")
-    print(f"Output file: {output_file}")
+    print(f"Matched records output: {output_file}")
+    print(f"Unmatched records output: {unmatched_file}")
     print()
     
-    result = compare_sheets(input_file, output_file)
+    result = compare_sheets(input_file, output_file, unmatched_file)
     
-    if result is not None:
-        print("\nComparison completed successfully!")
-    else:
-        print("\nComparison failed or no matches found.")
-        sys.exit(1)
+    print("\nComparison completed successfully!")
