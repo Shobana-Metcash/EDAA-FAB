@@ -17,7 +17,7 @@ pip install pandas openpyxl
 ## Usage
 
 ### Basic Usage
-Run the script with default settings (reads `compare.xlsx`, outputs `matched_records.xlsx`):
+Run the script with default settings (reads `compare.xlsx`, outputs `matched_records.xlsx` and `unmatched_records.xlsx`):
 ```bash
 python3 compare_sheets.py
 ```
@@ -25,7 +25,7 @@ python3 compare_sheets.py
 ### Custom Input/Output Files
 Specify custom input and output file paths:
 ```bash
-python3 compare_sheets.py input_file.xlsx output_file.xlsx
+python3 compare_sheets.py input_file.xlsx matched_output.xlsx unmatched_output.xlsx
 ```
 
 ## How It Works
@@ -48,12 +48,20 @@ The script identifies matches using two criteria:
 Matches are case-insensitive and whitespace is trimmed.
 
 ### Output
-The script generates an Excel file with:
+The script generates two Excel files:
+
+#### 1. Matched Records File (`matched_records.xlsx`)
+Contains all matched records with:
 - All columns from both CDL and GITHUB sheets for matched records
 - A `Match_Type` column indicating:
   - `Both_Matches`: Both Column I→C and Column K→D match
   - `CDL_Column_I_matches_GITHUB_Column_C`: Only Column I→C matches
   - `CDL_Column_K_matches_GITHUB_Column_D`: Only Column K→D matches
+
+#### 2. Unmatched Records File (`unmatched_records.xlsx`)
+Contains two sheets:
+- **Unmatched_CDL**: All CDL records that didn't match any GITHUB records
+- **Unmatched_GITHUB**: All GITHUB records that didn't match any CDL records
 
 ## Example Output
 ```
@@ -61,7 +69,8 @@ The script generates an Excel file with:
 CDL and GITHUB Sheet Comparison Tool
 ================================================================================
 Input file: compare.xlsx
-Output file: matched_records.xlsx
+Matched records output: matched_records.xlsx
+Unmatched records output: unmatched_records.xlsx
 
 Reading compare.xlsx...
 CDL sheet: 190 rows, 11 columns
@@ -76,6 +85,11 @@ CDL_Column_K_matches_GITHUB_Column_D    67
 Both_Matches                            64
 CDL_Column_I_matches_GITHUB_Column_C     7
 
+Found 54 unmatched CDL records
+Found 45 unmatched GITHUB records
+Unmatched CDL records saved to sheet 'Unmatched_CDL' in unmatched_records.xlsx
+Unmatched GITHUB records saved to sheet 'Unmatched_GITHUB' in unmatched_records.xlsx
+
 Comparison completed successfully!
 ```
 
@@ -83,3 +97,4 @@ Comparison completed successfully!
 - `compare.xlsx` - Input Excel file with CDL and GITHUB sheets
 - `compare_sheets.py` - Main comparison script
 - `matched_records.xlsx` - Output file with matching records (generated after running the script)
+- `unmatched_records.xlsx` - Output file with unmatched records from both sheets (generated after running the script)
