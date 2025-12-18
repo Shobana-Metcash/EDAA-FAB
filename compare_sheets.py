@@ -126,16 +126,20 @@ def compare_sheets(input_file='compare.xlsx', output_file='matched_records.xlsx'
         
         # Create unmatched records file
         if unmatched_cdl_indices or unmatched_github_indices:
-            with pd.ExcelWriter(unmatched_file, engine='openpyxl') as writer:
-                if unmatched_cdl_indices:
-                    unmatched_cdl_df = cdl_df.loc[list(unmatched_cdl_indices)]
-                    unmatched_cdl_df.to_excel(writer, sheet_name='Unmatched_CDL', index=False)
-                    print(f"Unmatched CDL records saved to sheet 'Unmatched_CDL' in {unmatched_file}")
-                
-                if unmatched_github_indices:
-                    unmatched_github_df = github_df.loc[list(unmatched_github_indices)]
-                    unmatched_github_df.to_excel(writer, sheet_name='Unmatched_GITHUB', index=False)
-                    print(f"Unmatched GITHUB records saved to sheet 'Unmatched_GITHUB' in {unmatched_file}")
+            try:
+                with pd.ExcelWriter(unmatched_file, engine='openpyxl') as writer:
+                    if unmatched_cdl_indices:
+                        unmatched_cdl_df = cdl_df.loc[list(unmatched_cdl_indices)]
+                        unmatched_cdl_df.to_excel(writer, sheet_name='Unmatched_CDL', index=False)
+                        print(f"Unmatched CDL records saved to sheet 'Unmatched_CDL' in {unmatched_file}")
+                    
+                    if unmatched_github_indices:
+                        unmatched_github_df = github_df.loc[list(unmatched_github_indices)]
+                        unmatched_github_df.to_excel(writer, sheet_name='Unmatched_GITHUB', index=False)
+                        print(f"Unmatched GITHUB records saved to sheet 'Unmatched_GITHUB' in {unmatched_file}")
+            except Exception as e:
+                print(f"Warning: Failed to create unmatched records file: {e}")
+                print("Matched records were still saved successfully.")
         
         return matched_df
             
@@ -161,4 +165,8 @@ if __name__ == "__main__":
     
     result = compare_sheets(input_file, output_file, unmatched_file)
     
-    print("\nComparison completed successfully!")
+    if result is not None:
+        print("\nComparison completed successfully!")
+    else:
+        print("\nComparison failed or no matches found.")
+        sys.exit(1)
