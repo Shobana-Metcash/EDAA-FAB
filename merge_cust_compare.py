@@ -15,6 +15,7 @@ Output:
 
 import pandas as pd
 import sys
+from openpyxl import load_workbook
 
 def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     """
@@ -148,21 +149,8 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
         # Save to Excel file with the Merged sheet
         # If output is the same as input, preserve existing sheets
         if output_file == input_file:
-            # Read the existing workbook to preserve CDL and GITHUB sheets
-            from openpyxl import load_workbook
-            
-            # Load the existing workbook
-            wb = load_workbook(input_file)
-            
-            # Remove 'Merged' sheet if it already exists
-            if 'Merged' in wb.sheetnames:
-                del wb['Merged']
-            
-            # Save the workbook
-            wb.save(input_file)
-            
-            # Now use pandas ExcelWriter in append mode to add the Merged sheet
-            with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
+            # Use pandas ExcelWriter with if_sheet_exists='replace' to handle existing sheet
+            with pd.ExcelWriter(output_file, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
                 merged_df.to_excel(writer, index=False, sheet_name='Merged')
         else:
             # Create new file with only Merged sheet
