@@ -33,25 +33,35 @@ def merge_loc_compare(input_file='Loc_Compare.xlsx', output_file='merged_output.
         print(f"CDL sheet: {cdl_df.shape[0]} rows, {cdl_df.shape[1]} columns")
         print(f"GITHUB sheet: {github_df.shape[0]} rows, {github_df.shape[1]} columns")
         
-        # Column indices (0-based)
-        # CDL Column I is index 8, CDL Column K is index 10
-        # GITHUB Column D is index 3, GITHUB Column E is index 4
-        cdl_col_i_idx = 8  # Table Field Name
-        cdl_col_k_idx = 10  # EDL Tables
-        github_col_d_idx = 3  # cdm_column
-        github_col_e_idx = 4  # pdm_column
+        # Define expected column names for matching
+        # CDL Column I (index 8) and Column K (index 10)
+        # GITHUB Column D (index 3) and Column E (index 4)
+        cdl_col_i_expected = 'Table Field Name'
+        cdl_col_k_expected = 'EDL Tables'
+        github_col_d_expected = 'cdm_column'
+        github_col_e_expected = 'pdm_column'
         
-        # Get column names
-        cdl_col_i = cdl_df.columns[cdl_col_i_idx]
-        cdl_col_k = cdl_df.columns[cdl_col_k_idx]
-        github_col_d = github_df.columns[github_col_d_idx]
-        github_col_e = github_df.columns[github_col_e_idx]
+        # Validate that expected columns exist
+        if cdl_col_i_expected not in cdl_df.columns:
+            raise ValueError(f"CDL sheet must contain column '{cdl_col_i_expected}' (expected at index 8)")
+        if cdl_col_k_expected not in cdl_df.columns:
+            raise ValueError(f"CDL sheet must contain column '{cdl_col_k_expected}' (expected at index 10)")
+        if github_col_d_expected not in github_df.columns:
+            raise ValueError(f"GITHUB sheet must contain column '{github_col_d_expected}' (expected at index 3)")
+        if github_col_e_expected not in github_df.columns:
+            raise ValueError(f"GITHUB sheet must contain column '{github_col_e_expected}' (expected at index 4)")
+        
+        # Use validated column names
+        cdl_col_i = cdl_col_i_expected
+        cdl_col_k = cdl_col_k_expected
+        github_col_d = github_col_d_expected
+        github_col_e = github_col_e_expected
         
         print(f"\nMatching columns:")
-        print(f"  CDL Column I (index {cdl_col_i_idx}): {cdl_col_i}")
-        print(f"  CDL Column K (index {cdl_col_k_idx}): {cdl_col_k}")
-        print(f"  GITHUB Column D (index {github_col_d_idx}): {github_col_d}")
-        print(f"  GITHUB Column E (index {github_col_e_idx}): {github_col_e}")
+        print(f"  CDL: '{cdl_col_i}' (Column I)")
+        print(f"  CDL: '{cdl_col_k}' (Column K)")
+        print(f"  GITHUB: '{github_col_d}' (Column D)")
+        print(f"  GITHUB: '{github_col_e}' (Column E)")
         
         # Track which GITHUB rows have been matched
         matched_github_indices = set()
@@ -62,17 +72,20 @@ def merge_loc_compare(input_file='Loc_Compare.xlsx', output_file='merged_output.
         # Process each CDL row
         print("\nProcessing CDL rows...")
         for cdl_idx, cdl_row in cdl_df.iterrows():
-            cdl_value_i = cdl_row.iloc[cdl_col_i_idx]
-            cdl_value_k = cdl_row.iloc[cdl_col_k_idx]
+            cdl_value_i = cdl_row[cdl_col_i]
+            cdl_value_k = cdl_row[cdl_col_k]
             
             # Start with the CDL row data
             merged_row = cdl_row.to_dict()
             
             # Look for matching GITHUB record
+            # Note: Takes first match only. If multiple GITHUB rows match the same CDL row,
+            # only the first match will be used. This is consistent with the requirement
+            # to append matching GITHUB data to each CDL row.
             match_found = False
             for github_idx, github_row in github_df.iterrows():
-                github_value_d = github_row.iloc[github_col_d_idx]
-                github_value_e = github_row.iloc[github_col_e_idx]
+                github_value_d = github_row[github_col_d]
+                github_value_e = github_row[github_col_e]
                 
                 # Check if CDL Column I matches GITHUB Column D
                 match_on_i_d = False
@@ -160,8 +173,24 @@ def merge_loc_compare(input_file='Loc_Compare.xlsx', output_file='merged_output.
         
         return merged_df
             
+    except FileNotFoundError as e:
+        print(f"Error: Input file not found - {e}")
+        print(f"Please ensure '{input_file}' exists in the current directory.")
+        return None
+    except ValueError as e:
+        print(f"Error: Invalid data or column structure - {e}")
+        print("Please check that the Excel file has the expected column names.")
+        return None
+    except KeyError as e:
+        print(f"Error: Missing expected column - {e}")
+        print("Please verify the CDL and GITHUB sheets have the required columns.")
+        return None
+    except PermissionError as e:
+        print(f"Error: Permission denied - {e}")
+        print(f"Please ensure you have write permissions for '{output_file}'.")
+        return None
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Unexpected error: {e}")
         import traceback
         traceback.print_exc()
         return None
