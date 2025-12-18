@@ -47,13 +47,18 @@ python3 merge_sheets.py input_file.xlsx merged_output.xlsx
 ### 3. Customer Compare Merge Script (`merge_cust_compare.py`)
 
 #### Basic Usage
-Run the merge script with default settings (reads `cust_compare.xlsx`, outputs `cust_compare_merged.xlsx`):
+Run the merge script with default settings (reads `cust_compare.xlsx`, adds a 'Merged' sheet to the same file):
 ```bash
 python3 merge_cust_compare.py
 ```
 
 #### Custom Input/Output Files
-Specify custom input and output file paths:
+Specify custom input file (adds 'Merged' sheet to the input file):
+```bash
+python3 merge_cust_compare.py input_file.xlsx
+```
+
+Specify both input and output files (creates a separate output file):
 ```bash
 python3 merge_cust_compare.py input_file.xlsx merged_output.xlsx
 ```
@@ -151,7 +156,7 @@ Then the matching GITHUB record's fields are appended to the CDL record.
 Matches are case-insensitive and whitespace is trimmed.
 
 #### Output
-The script generates a single Excel file with a **Merged** sheet containing:
+The script generates a **Merged** sheet in the same Excel file (or a separate file if specified) containing:
 
 1. **All CDL rows** (190 rows) - Each CDL row is preserved with:
    - All original CDL columns
@@ -225,7 +230,7 @@ Merge completed successfully!
 CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx
 ================================================================================
 Input file: cust_compare.xlsx
-Output file: cust_compare_merged.xlsx
+Output: Adding 'Merged' sheet to cust_compare.xlsx
 
 Reading cust_compare.xlsx...
 CDL sheet: 190 rows, 11 columns
@@ -238,7 +243,8 @@ Found 92 unmatched GITHUB records to append
 
 Total merged records: 282
 
-Merged sheet saved to cust_compare_merged.xlsx
+Adding 'Merged' sheet to cust_compare.xlsx...
+Merged sheet saved successfully!
 
 Merge completed successfully!
 ```
@@ -249,8 +255,7 @@ Merge completed successfully!
 - `cust_compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for merge_cust_compare.py)
 - `compare_sheets.py` - Comparison script that creates separate matched/unmatched files
 - `merge_sheets.py` - Merge script that creates a single merged output sheet
-- `merge_cust_compare.py` - Merge script for cust_compare.xlsx
+- `merge_cust_compare.py` - Merge script that adds a 'Merged' sheet to cust_compare.xlsx
 - `matched_records.xlsx` - Output from compare_sheets.py with matching records
 - `unmatched_records.xlsx` - Output from compare_sheets.py with unmatched records
 - `Loc_Compare_Merged.xlsx` - Output from merge_sheets.py with merged data
-- `cust_compare_merged.xlsx` - Output from merge_cust_compare.py with merged data

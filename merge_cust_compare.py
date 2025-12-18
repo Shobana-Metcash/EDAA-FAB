@@ -16,13 +16,13 @@ Output:
 import pandas as pd
 import sys
 
-def merge_cust_compare(input_file='cust_compare.xlsx', output_file='cust_compare_merged.xlsx'):
+def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     """
     Merge CDL and GITHUB sheets based on matching criteria.
     
     Args:
         input_file: Path to the input Excel file (default: cust_compare.xlsx)
-        output_file: Path to the output Excel file (default: cust_compare_merged.xlsx)
+        output_file: Path to the output Excel file (default: None, which adds Merged sheet to input_file)
     """
     try:
         # Read the sheets
@@ -138,11 +138,38 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file='cust_compare
         
         print(f"\nTotal merged records: {len(merged_df)}")
         
-        # Save to Excel file with the Merged sheet
-        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-            merged_df.to_excel(writer, index=False, sheet_name='Merged')
+        # Determine output file
+        if output_file is None:
+            output_file = input_file
+            print(f"\nAdding 'Merged' sheet to {output_file}...")
+        else:
+            print(f"\nSaving to {output_file}...")
         
-        print(f"\nMerged sheet saved to {output_file}")
+        # Save to Excel file with the Merged sheet
+        # If output is the same as input, preserve existing sheets
+        if output_file == input_file:
+            # Read the existing workbook to preserve CDL and GITHUB sheets
+            from openpyxl import load_workbook
+            
+            # Load the existing workbook
+            wb = load_workbook(input_file)
+            
+            # Remove 'Merged' sheet if it already exists
+            if 'Merged' in wb.sheetnames:
+                del wb['Merged']
+            
+            # Save the workbook
+            wb.save(input_file)
+            
+            # Now use pandas ExcelWriter in append mode to add the Merged sheet
+            with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
+                merged_df.to_excel(writer, index=False, sheet_name='Merged')
+        else:
+            # Create new file with only Merged sheet
+            with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+                merged_df.to_excel(writer, index=False, sheet_name='Merged')
+        
+        print(f"Merged sheet saved successfully!")
 
         return merged_df
 
@@ -155,13 +182,16 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file='cust_compare
 if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'cust_compare.xlsx'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'cust_compare_merged.xlsx'
+    output_file = sys.argv[2] if len(sys.argv) > 2 else None
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx")
     print("="*80)
     print(f"Input file: {input_file}")
-    print(f"Output file: {output_file}")
+    if output_file:
+        print(f"Output file: {output_file}")
+    else:
+        print(f"Output: Adding 'Merged' sheet to {input_file}")
     print()
     
     result = merge_cust_compare(input_file, output_file)
