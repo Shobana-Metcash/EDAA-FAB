@@ -160,7 +160,7 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
 if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'cust_compare.xlsx'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'cust_compare_merged.xlsx'
+    output_file = sys.argv[2] if len(sys.argv) > 2 else 'cust_compare_output.xlsx'
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx")
