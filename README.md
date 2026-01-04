@@ -47,13 +47,13 @@ python3 merge_sheets.py input_file.xlsx merged_output.xlsx
 ### 3. Customer Compare Merge Script (`merge_cust_compare.py`)
 
 #### Basic Usage
-Run the merge script with default settings (reads `cust_compare.xlsx`, outputs to `cust_compare_output.xlsx`):
+Run the merge script with default settings (reads `cust_compare.xlsx`, outputs to `results/cust_compare_results.xlsx`):
 ```bash
 python3 merge_cust_compare.py
 ```
 
 #### Custom Input/Output Files
-Specify custom input file (outputs to `cust_compare_output.xlsx`):
+Specify custom input file (outputs to `results/cust_compare_results.xlsx` in the same directory as the input file):
 ```bash
 python3 merge_cust_compare.py input_file.xlsx
 ```
@@ -175,17 +175,28 @@ Then the matching GITHUB record's fields are appended to the CDL record.
 Matches are case-insensitive and whitespace is trimmed.
 
 #### Output
-The script generates a separate output file `cust_compare_output.xlsx` with a sheet named **cust_compare_merged** containing:
+The script generates a separate output file `results/cust_compare_results.xlsx` with a sheet named **cust_compare_merged** containing:
 
 1. **All CDL rows** (190 rows) - Each CDL row is preserved with:
    - All original CDL columns
    - GITHUB columns prefixed with `GITHUB_` (populated if matched, empty if no match)
+   - A `Comments` column indicating match status
 
 2. **Unmatched GITHUB rows** (appended at the end) - GITHUB records that didn't match any CDL record:
    - Empty CDL columns
    - Populated GITHUB columns prefixed with `GITHUB_`
+   - A `Comments` column indicating "No matching record in CDL"
 
-The output preserves all data from both sheets while clearly indicating which records matched.
+#### Comments Column Values
+The `Comments` column provides detailed information about each record:
+- `CDL Column I matches GITHUB Column D` - Record matched via Table Field Name
+- `CDL Column K matches GITHUB Column E` - Record matched via Biz Name
+- `No matching record in GITHUB` - CDL record with no matching GITHUB record
+- `No matching record in CDL` - GITHUB record with no matching CDL record
+- `Duplicated (CDL Column I matches GITHUB Column D - already matched)` - CDL record that would match a GITHUB record that was already matched to another CDL record
+- `Duplicated (CDL Column K matches GITHUB Column E - already matched)` - CDL record that would match a GITHUB record that was already matched to another CDL record
+
+The output preserves all data from both sheets while clearly indicating which records matched and how.
 
 ### Vendor Compare Merge Script (`merge_vend_compare.py`)
 
@@ -292,7 +303,7 @@ Merge completed successfully!
 CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx
 ================================================================================
 Input file: cust_compare.xlsx
-Output file: cust_compare_output.xlsx
+Output file: /home/runner/work/EDAA-FAB/EDAA-FAB/results/cust_compare_results.xlsx
 
 Reading cust_compare.xlsx...
 CDL sheet: 190 rows, 11 columns
@@ -305,7 +316,7 @@ Found 92 unmatched GITHUB records to append
 
 Total merged records: 282
 
-Saving to cust_compare_output.xlsx...
+Saving to /home/runner/work/EDAA-FAB/EDAA-FAB/results/cust_compare_results.xlsx...
 Merged sheet saved successfully!
 
 Merge completed successfully!

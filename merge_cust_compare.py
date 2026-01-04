@@ -11,10 +11,12 @@ Output:
   1. All CDL rows enriched with matched GITHUB data
   2. Unmatched CDL rows (CDL data only)
   3. Unmatched GITHUB rows appended at the end
+  4. A "Comments" column indicating match status
 """
 
 import pandas as pd
 import sys
+import os
 
 def values_match(val1, val2):
     """
@@ -31,19 +33,33 @@ def values_match(val1, val2):
         return False
     return str(val1).strip().upper() == str(val2).strip().upper()
 
+def get_default_output_path(input_file):
+    """
+    Generate default output path in results directory.
+    
+    Args:
+        input_file: Path to the input Excel file
+        
+    Returns:
+        str: Path to results/cust_compare_results.xlsx
+    """
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(input_file)), 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    return os.path.join(results_dir, 'cust_compare_results.xlsx')
+
 def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     """
     Merge CDL and GITHUB sheets based on matching criteria.
     
     Args:
         input_file: Path to the input Excel file (default: cust_compare.xlsx)
-        output_file: Path to the output Excel file (default: cust_compare_merged.xlsx)
-                    If None, creates a new sheet in the input file
+        output_file: Path to the output Excel file (default: results/cust_compare_results.xlsx)
+                    If None, saves to results/cust_compare_results.xlsx
     """
     try:
         # Set default output file
         if output_file is None:
-            output_file = 'cust_compare_merged.xlsx'
+            output_file = get_default_output_path(input_file)
         
         # Read the sheets
         print(f"Reading {input_file}...")
@@ -84,23 +100,35 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
             # Look for a matching GITHUB record
             matched_github_row = None
             matched_github_idx = None
+            match_type = None
+            is_duplicate = False
             
             for github_idx, github_row in github_df.iterrows():
-                # Skip if already matched
-                if github_idx in matched_github_indices:
-                    continue
-                
                 github_value_d = github_row[github_col_d]
                 github_value_e = github_row[github_col_e]
                 
-                # Check if CDL Column I matches GITHUB Column D or CDL Column K matches GITHUB Column E
-                match_found = (values_match(cdl_value_i, github_value_d) or 
-                              values_match(cdl_value_k, github_value_e))
-                
-                if match_found:
+                # Check if CDL Column I matches GITHUB Column D
+                if values_match(cdl_value_i, github_value_d):
+                    if github_idx in matched_github_indices:
+                        # This GITHUB record was already matched to another CDL record
+                        is_duplicate = True
+                        match_type = 'Duplicated (CDL Column I matches GITHUB Column D - already matched)'
+                        break
                     matched_github_row = github_row
                     matched_github_idx = github_idx
-                    matched_github_indices.add(github_idx)
+                    match_type = 'CDL Column I matches GITHUB Column D'
+                    break
+                
+                # Check if CDL Column K matches GITHUB Column E
+                if values_match(cdl_value_k, github_value_e):
+                    if github_idx in matched_github_indices:
+                        # This GITHUB record was already matched to another CDL record
+                        is_duplicate = True
+                        match_type = 'Duplicated (CDL Column K matches GITHUB Column E - already matched)'
+                        break
+                    matched_github_row = github_row
+                    matched_github_idx = github_idx
+                    match_type = 'CDL Column K matches GITHUB Column E'
                     break
             
             # Create merged record
@@ -111,10 +139,23 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
                 for col in github_df.columns:
                     # Prefix GITHUB columns to avoid conflicts
                     merged_record[f'GITHUB_{col}'] = matched_github_row[col]
+                
+                matched_github_indices.add(matched_github_idx)
+                
+                # Set comment based on match type
+                merged_record['Comments'] = match_type
+            elif is_duplicate:
+                # Found a potential match, but it was already matched to another CDL record
+                for col in github_df.columns:
+                    merged_record[f'GITHUB_{col}'] = None
+                merged_record['Comments'] = match_type
             else:
                 # No match found, add empty GITHUB columns
                 for col in github_df.columns:
                     merged_record[f'GITHUB_{col}'] = None
+                
+                # Set comment for no match
+                merged_record['Comments'] = 'No matching record in GITHUB'
             
             merged_records.append(merged_record)
         
@@ -136,6 +177,9 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
             # Add GITHUB columns
             for col in github_df.columns:
                 merged_record[f'GITHUB_{col}'] = github_row[col]
+            
+            # Set comment for unmatched GITHUB record
+            merged_record['Comments'] = 'No matching record in CDL'
             
             merged_records.append(merged_record)
         
@@ -160,7 +204,12 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
 if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'cust_compare.xlsx'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'cust_compare_output.xlsx'
+    
+    # Set default output file to results/cust_compare_results.xlsx
+    if len(sys.argv) > 2:
+        output_file = sys.argv[2]
+    else:
+        output_file = get_default_output_path(input_file)
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx")
