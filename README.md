@@ -82,6 +82,25 @@ Specify both input and output files (creates a separate output file):
 python3 merge_vend_compare.py input_file.xlsx merged_output.xlsx
 ```
 
+### 5. Item Compare Merge Script (`merge_item_compare.py`)
+
+#### Basic Usage
+Run the merge script with default settings (reads `item_compare.xlsx`, outputs to `results/item_compare_results.xlsx`):
+```bash
+python3 merge_item_compare.py
+```
+
+#### Custom Input/Output Files
+Specify custom input file (outputs to `results/item_compare_results.xlsx` in the same directory as the input file):
+```bash
+python3 merge_item_compare.py input_file.xlsx
+```
+
+Specify both input and output files (creates a separate output file):
+```bash
+python3 merge_item_compare.py input_file.xlsx merged_output.xlsx
+```
+
 ## How It Works
 
 ### Compare Sheets Script (`compare_sheets.py`)
@@ -241,6 +260,51 @@ The `Comments` column provides detailed information about each record:
 
 The output preserves all data from both sheets while clearly indicating which records matched and how.
 
+### Item Compare Merge Script (`merge_item_compare.py`)
+
+The merge script combines CDL and GITHUB sheets from `item_compare.xlsx`:
+
+1. **CDL Sheet** - Contains item data with:
+   - Column H (index 7): "Table Field Name"
+   - Column L (index 11): "Biz Name"
+
+2. **GITHUB Sheet** - Contains GitHub data with:
+   - Column D (index 3): "cdm_column"
+   - Column E (index 4): "pdm_column"
+
+#### Merging Logic
+For each row in CDL:
+- If **CDL Column H** (Table Field Name) matches **GITHUB Column D** (cdm_column), OR
+- If **CDL Column L** (Biz Name) matches **GITHUB Column E** (pdm_column)
+
+Then the matching GITHUB record's fields are appended to the CDL record.
+
+Matches are case-insensitive and whitespace is trimmed.
+
+#### Output
+The script generates a separate output file `results/item_compare_results.xlsx` with a sheet named **item_compare_merged** containing:
+
+1. **All CDL rows** (682 rows) - Each CDL row is preserved with:
+   - All original CDL columns
+   - GITHUB columns prefixed with `GITHUB_` (populated if matched, empty if no match)
+   - A `Comments` column indicating match status
+
+2. **Unmatched GITHUB rows** (appended at the end) - GITHUB records that did not match any CDL record:
+   - Empty CDL columns
+   - Populated GITHUB columns prefixed with `GITHUB_`
+   - A `Comments` column indicating "No matching record in CDL"
+
+#### Comments Column Values
+The `Comments` column provides detailed information about each record:
+- `CDL Column H matches GITHUB Column D` - Record matched via Table Field Name
+- `CDL Column L matches GITHUB Column E` - Record matched via Biz Name
+- `No matching record in GITHUB` - CDL record with no matching GITHUB record
+- `No matching record in CDL` - GITHUB record with no matching CDL record
+- `Duplicated (CDL Column H matches GITHUB Column D - already matched)` - CDL record that would match a GITHUB record that was already matched to another CDL record
+- `Duplicated (CDL Column L matches GITHUB Column E - already matched)` - CDL record that would match a GITHUB record that was already matched to another CDL record
+
+The output preserves all data from both sheets while clearly indicating which records matched and how.
+
 ## Example Output
 
 ### Compare Sheets Example
@@ -347,15 +411,43 @@ Merged sheet saved successfully!
 Merge completed successfully!
 ```
 
+### Item Compare Merge Example
+```
+================================================================================
+CDL and GITHUB Sheet Merge Tool for item_compare.xlsx
+================================================================================
+Input file: item_compare.xlsx
+Output file: /home/runner/work/EDAA-FAB/EDAA-FAB/results/item_compare_results.xlsx
+
+Reading item_compare.xlsx...
+CDL sheet: 682 rows, 12 columns
+GITHUB sheet: 236 rows, 5 columns
+
+Processing CDL rows...
+Processed 682 CDL records
+Matched 210 GITHUB records with CDL records
+Found 26 unmatched GITHUB records to append
+
+Total merged records: 708
+
+Saving to /home/runner/work/EDAA-FAB/EDAA-FAB/results/item_compare_results.xlsx...
+Merged sheet saved successfully!
+
+Merge completed successfully!
+```
+
 ## Files
 - `compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for compare_sheets.py)
 - `Loc_Compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for merge_sheets.py)
 - `cust_compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for merge_cust_compare.py)
 - `vend_compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for merge_vend_compare.py)
+- `item_compare.xlsx` - Input Excel file with CDL and GITHUB sheets (for merge_item_compare.py)
 - `compare_sheets.py` - Comparison script that creates separate matched/unmatched files
 - `merge_sheets.py` - Merge script that creates a single merged output sheet
-- `merge_cust_compare.py` - Merge script that creates cust_compare_output.xlsx with a 'cust_compare_merged' sheet
+- `merge_cust_compare.py` - Merge script that creates results/cust_compare_results.xlsx with a 'cust_compare_merged' sheet
 - `merge_vend_compare.py` - Merge script that creates vend_compare_merged.xlsx with a 'vend_compare_merged' sheet and Comments column
+- `merge_item_compare.py` - Merge script that creates results/item_compare_results.xlsx with a 'item_compare_merged' sheet and Comments column
 - `matched_records.xlsx` - Output from compare_sheets.py with matching records
 - `unmatched_records.xlsx` - Output from compare_sheets.py with unmatched records
 - `Loc_Compare_Merged.xlsx` - Output from merge_sheets.py with merged data
+- `results/` - Directory containing output files from merge scripts (gitignored)
