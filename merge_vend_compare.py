@@ -16,6 +16,7 @@ Output:
 
 import pandas as pd
 import sys
+import os
 
 def values_match(val1, val2):
     """
@@ -32,19 +33,38 @@ def values_match(val1, val2):
         return False
     return str(val1).strip().upper() == str(val2).strip().upper()
 
+def get_output_file_path(input_file):
+    """
+    Generate output file path in the same directory as input file.
+    
+    Args:
+        input_file: Path to the input Excel file
+        
+    Returns:
+        str: Path to the output file with _merged suffix
+    """
+    # Get the directory of the input file
+    input_dir = os.path.dirname(os.path.abspath(input_file))
+    # Get the base name without extension
+    input_base = os.path.splitext(os.path.basename(input_file))[0]
+    # Create output filename with _merged suffix
+    output_filename = f"{input_base}_merged.xlsx"
+    # Combine directory and filename
+    return os.path.join(input_dir, output_filename)
+
 def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
     """
     Merge CDL and GITHUB sheets based on matching criteria.
     
     Args:
         input_file: Path to the input Excel file (default: vend_compare.xlsx)
-        output_file: Path to the output Excel file (default: vend_compare_merged.xlsx)
-                    If None, creates vend_compare_merged.xlsx
+        output_file: Path to the output Excel file. If None, creates 
+                    <input_basename>_merged.xlsx in the same directory as input_file
     """
     try:
-        # Set default output file
+        # Set default output file in the same directory as input file
         if output_file is None:
-            output_file = 'vend_compare_merged.xlsx'
+            output_file = get_output_file_path(input_file)
         
         # Read the sheets
         print(f"Reading {input_file}...")
@@ -177,7 +197,12 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
 if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'vend_compare.xlsx'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'vend_compare_merged.xlsx'
+    
+    # Set default output file in the same directory as input file
+    if len(sys.argv) > 2:
+        output_file = sys.argv[2]
+    else:
+        output_file = get_output_file_path(input_file)
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for vend_compare.xlsx")

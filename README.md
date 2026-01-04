@@ -72,7 +72,7 @@ python3 merge_vend_compare.py
 ```
 
 #### Custom Input/Output Files
-Specify custom input file (outputs to `vend_compare_merged.xlsx`):
+Specify custom input file (outputs to `<input_basename>_merged.xlsx` in the same directory as the input file):
 ```bash
 python3 merge_vend_compare.py input_file.xlsx
 ```
@@ -209,7 +209,7 @@ Then the matching GITHUB record's fields are appended to the CDL record.
 Matches are case-insensitive and whitespace is trimmed.
 
 #### Output
-The script generates a separate output file `vend_compare_merged.xlsx` with a sheet named **vend_compare_merged** containing:
+The script generates a separate output file (e.g., `vend_compare_merged.xlsx` when input is `vend_compare.xlsx`) in the same directory as the input file, with a sheet named **vend_compare_merged** containing:
 
 1. **All CDL rows** (141 rows) - Each CDL row is preserved with:
    - All original CDL columns
