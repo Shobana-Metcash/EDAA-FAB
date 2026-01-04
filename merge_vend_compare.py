@@ -33,6 +33,25 @@ def values_match(val1, val2):
         return False
     return str(val1).strip().upper() == str(val2).strip().upper()
 
+def get_output_file_path(input_file):
+    """
+    Generate output file path in the same directory as input file.
+    
+    Args:
+        input_file: Path to the input Excel file
+        
+    Returns:
+        str: Path to the output file with _merged suffix
+    """
+    # Get the directory of the input file
+    input_dir = os.path.dirname(os.path.abspath(input_file))
+    # Get the base name without extension
+    input_base = os.path.splitext(os.path.basename(input_file))[0]
+    # Create output filename with _merged suffix
+    output_filename = f"{input_base}_merged.xlsx"
+    # Combine directory and filename
+    return os.path.join(input_dir, output_filename)
+
 def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
     """
     Merge CDL and GITHUB sheets based on matching criteria.
@@ -45,14 +64,7 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
     try:
         # Set default output file in the same directory as input file
         if output_file is None:
-            # Get the directory of the input file
-            input_dir = os.path.dirname(os.path.abspath(input_file))
-            # Get the base name without extension
-            input_base = os.path.splitext(os.path.basename(input_file))[0]
-            # Create output filename with _merged suffix
-            output_filename = f"{input_base}_merged.xlsx"
-            # Combine directory and filename
-            output_file = os.path.join(input_dir, output_filename)
+            output_file = get_output_file_path(input_file)
         
         # Read the sheets
         print(f"Reading {input_file}...")
@@ -190,14 +202,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         output_file = sys.argv[2]
     else:
-        # Get the directory of the input file
-        input_dir = os.path.dirname(os.path.abspath(input_file))
-        # Get the base name without extension
-        input_base = os.path.splitext(os.path.basename(input_file))[0]
-        # Create output filename with _merged suffix
-        output_filename = f"{input_base}_merged.xlsx"
-        # Combine directory and filename
-        output_file = os.path.join(input_dir, output_filename)
+        output_file = get_output_file_path(input_file)
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for vend_compare.xlsx")
