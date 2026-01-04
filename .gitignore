@@ -15,6 +15,10 @@ ENV/
 matched_records.xlsx
 unmatched_records.xlsx
 
+# Exception: track results directory
+!results/
+!results/**
+
 # IDE
 .vscode/
 .idea/
