@@ -33,6 +33,20 @@ def values_match(val1, val2):
         return False
     return str(val1).strip().upper() == str(val2).strip().upper()
 
+def get_default_output_path(input_file):
+    """
+    Generate default output path in results directory.
+    
+    Args:
+        input_file: Path to the input Excel file
+        
+    Returns:
+        str: Path to results/cust_compare_results.xlsx
+    """
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(input_file)), 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    return os.path.join(results_dir, 'cust_compare_results.xlsx')
+
 def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     """
     Merge CDL and GITHUB sheets based on matching criteria.
@@ -45,10 +59,7 @@ def merge_cust_compare(input_file='cust_compare.xlsx', output_file=None):
     try:
         # Set default output file
         if output_file is None:
-            # Create results directory if it doesn't exist
-            results_dir = os.path.join(os.path.dirname(os.path.abspath(input_file)), 'results')
-            os.makedirs(results_dir, exist_ok=True)
-            output_file = os.path.join(results_dir, 'cust_compare_results.xlsx')
+            output_file = get_default_output_path(input_file)
         
         # Read the sheets
         print(f"Reading {input_file}...")
@@ -198,10 +209,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         output_file = sys.argv[2]
     else:
-        # Create results directory if it doesn't exist
-        results_dir = os.path.join(os.path.dirname(os.path.abspath(input_file)), 'results')
-        os.makedirs(results_dir, exist_ok=True)
-        output_file = os.path.join(results_dir, 'cust_compare_results.xlsx')
+        output_file = get_default_output_path(input_file)
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for cust_compare.xlsx")
