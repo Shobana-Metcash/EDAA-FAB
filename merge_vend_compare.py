@@ -16,6 +16,7 @@ Output:
 
 import pandas as pd
 import sys
+import os
 
 def values_match(val1, val2):
     """
@@ -42,9 +43,16 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
                     If None, creates vend_compare_merged.xlsx
     """
     try:
-        # Set default output file
+        # Set default output file in the same directory as input file
         if output_file is None:
-            output_file = 'vend_compare_merged.xlsx'
+            # Get the directory of the input file
+            input_dir = os.path.dirname(os.path.abspath(input_file))
+            # Get the base name without extension
+            input_base = os.path.splitext(os.path.basename(input_file))[0]
+            # Create output filename with _merged suffix
+            output_filename = f"{input_base}_merged.xlsx"
+            # Combine directory and filename
+            output_file = os.path.join(input_dir, output_filename)
         
         # Read the sheets
         print(f"Reading {input_file}...")
@@ -177,7 +185,19 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
 if __name__ == "__main__":
     # Allow custom input/output file paths as command-line arguments
     input_file = sys.argv[1] if len(sys.argv) > 1 else 'vend_compare.xlsx'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'vend_compare_merged.xlsx'
+    
+    # Set default output file in the same directory as input file
+    if len(sys.argv) > 2:
+        output_file = sys.argv[2]
+    else:
+        # Get the directory of the input file
+        input_dir = os.path.dirname(os.path.abspath(input_file))
+        # Get the base name without extension
+        input_base = os.path.splitext(os.path.basename(input_file))[0]
+        # Create output filename with _merged suffix
+        output_filename = f"{input_base}_merged.xlsx"
+        # Combine directory and filename
+        output_file = os.path.join(input_dir, output_filename)
     
     print("="*80)
     print("CDL and GITHUB Sheet Merge Tool for vend_compare.xlsx")
