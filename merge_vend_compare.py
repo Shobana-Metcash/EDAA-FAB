@@ -39,7 +39,7 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
     Args:
         input_file: Path to the input Excel file (default: vend_compare.xlsx)
         output_file: Path to the output Excel file (default: vend_compare_merged.xlsx)
-                    If None, creates a new sheet in the output file
+                    If None, creates vend_compare_merged.xlsx
     """
     try:
         # Set default output file
@@ -55,12 +55,10 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
         print(f"GITHUB sheet: {github_df.shape[0]} rows, {github_df.shape[1]} columns")
         
         # Get the column names for matching
-        # Column G (index 6) is "Table Field Name"
-        # Column K (index 10) is "Biz Name"
-        cdl_col_g = 'Table Field Name'  # Column G (index 6)
-        cdl_col_k = 'Biz Name'  # Column K (index 10)
-        github_col_d = 'cdm_column'  # Column D (index 3)
-        github_col_e = 'pdm_column'  # Column E (index 4)
+        cdl_col_g = 'Table Field Name'  # Column G
+        cdl_col_k = 'Biz Name'  # Column K
+        github_col_d = 'cdm_column'  # Column D
+        github_col_e = 'pdm_column'  # Column E
         
         # Validate that required columns exist
         if cdl_col_g not in cdl_df.columns:
@@ -74,9 +72,6 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
         
         # Track which GITHUB records have been matched
         matched_github_indices = set()
-        
-        # Track duplicate matches
-        github_match_count = {}
         
         # List to store merged records
         merged_records = []
@@ -123,12 +118,6 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
                     # Prefix GITHUB columns to avoid conflicts
                     merged_record[f'GITHUB_{col}'] = matched_github_row[col]
                 
-                # Track match count for duplicates
-                if matched_github_idx in github_match_count:
-                    github_match_count[matched_github_idx] += 1
-                else:
-                    github_match_count[matched_github_idx] = 1
-                
                 matched_github_indices.add(matched_github_idx)
                 
                 # Set comment based on match type
@@ -166,20 +155,6 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
             merged_record['Comments'] = 'No matching record in CDL'
             
             merged_records.append(merged_record)
-        
-        # Check for duplicates and update comments
-        for idx, record in enumerate(merged_records):
-            # Check if this is a CDL record that matched a GITHUB record
-            if 'GITHUB_' + github_df.columns[0] in record and not pd.isna(record.get('GITHUB_' + github_df.columns[0])):
-                # Find the github_idx by checking all GITHUB records
-                for github_idx in matched_github_indices:
-                    github_row = github_df.loc[github_idx]
-                    # Check if this record matches the github_row
-                    if all(record.get(f'GITHUB_{col}') == github_row[col] for col in github_df.columns):
-                        if github_match_count.get(github_idx, 0) > 1:
-                            # Update comment to indicate duplicate
-                            merged_records[idx]['Comments'] = record.get('Comments', '') + ' (Duplicated)'
-                        break
         
         # Create DataFrame from merged records
         merged_df = pd.DataFrame(merged_records)
