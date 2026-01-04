@@ -15,6 +15,10 @@ ENV/
 matched_records.xlsx
 unmatched_records.xlsx
 
+# Allow results folder
+!results/
+!results/*
+
 # IDE
 .vscode/
 .idea/
