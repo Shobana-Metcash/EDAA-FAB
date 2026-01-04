@@ -58,8 +58,8 @@ def merge_vend_compare(input_file='vend_compare.xlsx', output_file=None):
     
     Args:
         input_file: Path to the input Excel file (default: vend_compare.xlsx)
-        output_file: Path to the output Excel file (default: vend_compare_merged.xlsx)
-                    If None, creates vend_compare_merged.xlsx
+        output_file: Path to the output Excel file. If None, creates 
+                    <input_basename>_merged.xlsx in the same directory as input_file
     """
     try:
         # Set default output file in the same directory as input file
